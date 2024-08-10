@@ -3,14 +3,19 @@ local function toggleNuiFrame(shouldShow)
   SendReactMessage('setVisible', shouldShow)
 end
 
+local function closeNuiFrame()
+  SetNuiFocus(false, false)
+  SendReactMessage('closeFrame', true)
+end
+
 RegisterCommand('show-nui', function()
   toggleNuiFrame(true)
   debugPrint('Show NUI frame')
 end)
 
 RegisterNUICallback('hideFrame', function(_, cb)
-  toggleNuiFrame(false)
-  debugPrint('Hide NUI frame')
+  closeNuiFrame()
+  debugPrint('Close NUI frame')
   cb({})
 end)
 
@@ -27,20 +32,16 @@ RegisterNetEvent('spawnCar')
 AddEventHandler('spawnCar', function(vehicleData)
     local model = GetHashKey(vehicleData.model)
 
-    -- Carrega o modelo do carro
     RequestModel(model)
     while not HasModelLoaded(model) do
         Wait(500)
     end
 
-    -- Obtém a posição do jogador para spawnar o carro
     local playerPed = PlayerPedId()
     local pos = GetEntityCoords(playerPed)
 
-    -- Cria o veículo
     local vehicle = CreateVehicle(model, pos.x, pos.y, pos.z, GetEntityHeading(playerPed), true, false)
 
-    -- Define a placa e a cor
     SetVehicleNumberPlateText(vehicle, vehicleData.plate)
     SetVehicleColours(vehicle, vehicleData.color)
     SetPedIntoVehicle(playerPed, vehicle, -1)

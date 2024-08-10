@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./App.css";
+import axios from "axios";
 
 interface Car {
   id: number;
@@ -12,15 +12,14 @@ interface Car {
 
 const App: React.FC = () => {
   const [cars, setCars] = useState<Car[]>([]);
-  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [isVisible, setIsVisible] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [carsPerPage] = useState<number>(10);
 
   const fetchCars = async () => {
     try {
-      const response = await fetch("http://localhost:3333/vehicles");
-      const data = await response.json();
-      const carsWithImages = data.map((car: Car, index: number) => ({
+      const response = await axios.get("http://localhost:3333/vehicles");
+      const carsWithImages = response.data.map((car: Car, index: number) => ({
         ...car,
         imageUrl: `https://via.placeholder.com/200?text=Carro+${index + 1}`, // Adiciona a URL da imagem simulada
       }));
@@ -36,21 +35,13 @@ const App: React.FC = () => {
     }
   }, [isVisible]);
 
-  const handleToggleNui = () => {
-    setIsVisible(!isVisible);
-  };
-
   const handleSelectCar = async (carPlate: string) => {
     try {
-      const response = await fetch(`http://localhost:3333/vehicles/respawn`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ plate: carPlate }),
+      const response = await axios.post(`http://localhost:3333/vehicles/respawn`, {
+        plate: carPlate,
       });
 
-      if (response.ok) {
+      if (response.status === 200) {
         console.log(`Carro com a placa ${carPlate} foi respawnado com sucesso.`);
       } else {
         console.error(`Erro ao respawnar o carro com a placa ${carPlate}.`);
@@ -59,6 +50,7 @@ const App: React.FC = () => {
       console.error("Erro ao fazer a requisição:", error);
     }
   };
+
   const indexOfLastCar = currentPage * carsPerPage;
   const indexOfFirstCar = indexOfLastCar - carsPerPage;
   const currentCars = cars.slice(indexOfFirstCar, indexOfLastCar);
@@ -69,48 +61,63 @@ const App: React.FC = () => {
     setCurrentPage(page);
   };
 
-  return (
-    <div className="nui-wrapper">
-      <div className="popup-thing">
-        <div>
-          <h1>Popup da NUI!</h1>
-          <p>Saia com a tecla de escape</p>
-          <button onClick={handleToggleNui}>Alternar NUI</button>
-          {isVisible && (
-            <div>
-              <h2>Carros Disponíveis</h2>
-              <div className="car-list">
-                {currentCars.map((car) => (
-                  <div key={car.id} className="car-item">
-                    <img src={car.imageUrl} alt={`${car.model}`} className="car-image" />
-                    <div className="car-info">
-                      <h3>{car.name}</h3>
-                      <p>Modelo: {car.model}</p>
-                      <p>Cor: {car.color}</p>
-                      <p>Placa: {car.plate}</p>
-                      <button onClick={() => handleSelectCar(car.plate)}>Selecionar</button>
+  const handleClose = () => {
+    setIsVisible(false);
+  };
 
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="pagination">
-                {Array.from({ length: totalPages }, (_, index) => (
-                  <button
-                    key={index + 1}
-                    onClick={() => handlePageChange(index + 1)}
-                    className={currentPage === index + 1 ? 'active' : ''}
+  if (!isVisible) {
+    return null;
+  }
+
+  return (
+    <div className="flex justify-center items-center h-screen text-center">
+      <div className="bg-gray-900 rounded-lg w-11/12 md:w-2/5 h-5/6 p-8 flex flex-col justify-center items-center text-white overflow-auto relative">
+        <button 
+          className="absolute top-2 right-2 text-white text-2xl" 
+          onClick={handleClose}
+        >
+          &times;
+        </button>
+        <div>
+          <h2 className="text-2xl mt-6 mb-4">Carros Disponíveis</h2>
+          <div className="flex flex-wrap gap-4 justify-center">
+            {currentCars.map((car) => (
+              <div key={car.id} className="bg-gray-700 rounded-lg w-48 p-4 text-center">
+                <img src={car.imageUrl} alt={`${car.model}`} className="rounded-lg mb-4" />
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold">{car.name}</h3>
+                  <p className="text-sm">Modelo: {car.model}</p>
+                  <p className="text-sm">Cor: {car.color}</p>
+                  <p className="text-sm">Placa: {car.plate}</p>
+                  <button 
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-2"
+                    onClick={() => handleSelectCar(car.plate)}
                   >
-                    {index + 1}
+                    Selecionar
                   </button>
-                ))}
+                </div>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
+          <div className="mt-6 flex justify-center">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => handlePageChange(index + 1)}
+                className={`mx-2 px-4 py-2 rounded border ${
+                  currentPage === index + 1 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-gray-800 text-blue-500'
+                }`}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
-};
+}  
 
 export default App;

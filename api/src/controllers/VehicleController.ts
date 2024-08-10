@@ -2,6 +2,10 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import prisma from "../utils/prismaClient";
 import { GetCarByPlateQuery } from "../models/vehicle";
 
+import { EventEmitter } from 'events';
+
+const eventEmitter = new EventEmitter();
+
 export async function getCarByPlate(
   request: FastifyRequest<{ Querystring: GetCarByPlateQuery }>,
   reply: FastifyReply
@@ -32,5 +36,28 @@ export async function getAllVehicles(
     reply.send(vehicles);
   } catch (error) {
     reply.status(500).send({ error: "Erro ao buscar veículos." });
+  }
+}
+
+export async function respawnCar(
+  request: FastifyRequest<{ Body: { plate: string } }>,
+  reply: FastifyReply
+) {
+  const { plate } = request.body;
+
+  try {
+    const vehicle = await prisma.vehicle.findUnique({
+      where: { plate: plate },
+    });
+
+    if (vehicle) {
+      eventEmitter.emit('spawnCarFromUI', vehicle);
+      
+      reply.send({ success: true });
+    } else {
+      reply.status(404).send({ error: "Veículo não encontrado." });
+    }
+  } catch (error) {
+    reply.status(500).send({ error: "Erro ao respawnar veículo." });
   }
 }

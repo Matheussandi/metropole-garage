@@ -21,6 +21,8 @@ model vehicle {
   owner    String?
   playerId Int?
   name     String
+  model    String
+  category String
   player   player? @relation(fields: [playerId], references: [id], map: "Vehicle_playerId_fkey")
 
   @@index([playerId], map: "Vehicle_playerId_fkey")

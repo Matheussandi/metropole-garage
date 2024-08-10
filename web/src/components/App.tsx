@@ -42,15 +42,14 @@ const App: React.FC = () => {
 
   const handleSelectCar = async (carPlate: string) => {
     try {
-      // Chama a API do servidor para respawnar o carro
-      const response = await fetch(`http://localhost:3333/spawnCar`, {
+      const response = await fetch(`http://localhost:3333/vehicles/respawn`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ plate: carPlate }),
       });
-  
+
       if (response.ok) {
         console.log(`Carro com a placa ${carPlate} foi respawnado com sucesso.`);
       } else {
@@ -60,8 +59,6 @@ const App: React.FC = () => {
       console.error("Erro ao fazer a requisição:", error);
     }
   };
-  
-
   const indexOfLastCar = currentPage * carsPerPage;
   const indexOfFirstCar = indexOfLastCar - carsPerPage;
   const currentCars = cars.slice(indexOfFirstCar, indexOfLastCar);

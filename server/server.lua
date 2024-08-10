@@ -9,7 +9,6 @@ AddEventHandler('playerJoining', function()
     end, 'POST', json.encode({ id = playerId, name = playerName }), { ['Content-Type'] = 'application/json' })
 end)
 
-
 RegisterCommand('car', function(source, args)
     local playerId = source
     local plate = args[1]
@@ -21,13 +20,17 @@ RegisterCommand('car', function(source, args)
         return
     end
 
-        -- Exibe a placa informada no console
-        print('Placa informada: ' .. plate)
+    -- Exibe a placa informada no console
+    print('Placa informada: ' .. plate)
 
     -- Chama a API para buscar o veículo
-    PerformHttpRequest('http://localhost:3333/getCarByPlate?plate=' .. plate, function(statusCode, response, headers)
+    PerformHttpRequest('http://localhost:3333/vehicle?plate=' .. plate, function(statusCode, response, headers)
+        print('Status Code: ' .. statusCode)
+        print('Response: ' .. response)
+
         if statusCode == 200 then
             local vehicleData = json.decode(response)
+            print('Vehicle Data: ' .. json.encode(vehicleData))
 
             -- Envia os dados do veículo para o cliente
             TriggerClientEvent('spawnCar', playerId, vehicleData)
@@ -39,11 +42,11 @@ RegisterCommand('car', function(source, args)
     end)
 end)
 
+RegisterNetEvent('spawnCar')
+AddEventHandler('spawnCar', function(vehicleData)
+    print('Vehicle Data Received: ' .. json.encode(vehicleData))
 
-RegisterNetEvent('spawnCarFromUI')
-AddEventHandler('spawnCarFromUI', function(vehicleData)
-    local playerId = source
-    local model = GetHashKey(vehicleData.name)
+    local model = GetHashKey(vehicleData.model)
 
     -- Carrega o modelo do carro
     RequestModel(model)
@@ -64,10 +67,11 @@ AddEventHandler('spawnCarFromUI', function(vehicleData)
     SetPedIntoVehicle(playerPed, vehicle, -1)
 end)
 
-
--- Função para respawnar o veículo
-function spawnCarForPlayer(playerId, vehicleData)
-    local model = GetHashKey(vehicleData.name)
+RegisterNetEvent('spawnCarFromUI')
+AddEventHandler('spawnCarFromUI', function(vehicleData)
+    print('Spawn Car From UI: ')
+    local playerId = source
+    local model = GetHashKey(vehicleData.model)
 
     -- Carrega o modelo do carro
     RequestModel(model)
@@ -75,8 +79,8 @@ function spawnCarForPlayer(playerId, vehicleData)
         Wait(500)
     end
 
-    -- Pega a posição do jogador
-    local playerPed = GetPlayerPed(playerId)
+    -- Obtém a posição do jogador para spawnar o carro
+    local playerPed = PlayerPedId()
     local pos = GetEntityCoords(playerPed)
 
     -- Cria o veículo
@@ -86,7 +90,4 @@ function spawnCarForPlayer(playerId, vehicleData)
     SetVehicleNumberPlateText(vehicle, vehicleData.plate)
     SetVehicleColours(vehicle, vehicleData.color)
     SetPedIntoVehicle(playerPed, vehicle, -1)
-end
-
--- Exporta a função para ser acessível pelo Node.js
-exports('spawnCarForPlayer', spawnCarForPlayer)
+end)

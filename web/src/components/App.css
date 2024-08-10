@@ -1,0 +1,91 @@
+.nui-wrapper {
+  text-align: center;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-thing {
+  background: #282c34;
+  border-radius: 10px;
+  width: 600px;
+  max-width: 90%;
+  height: 500px;
+  max-height: 90%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  overflow-y: auto; /* Permite rolar se houver muitos carros */
+}
+
+.car-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.car-item {
+  background: #3a3f47;
+  border-radius: 8px;
+  width: 200px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+}
+
+.car-image {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.car-info {
+  text-align: center;
+}
+
+button {
+  background-color: #61dafb;
+  border: none;
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #21a1f1;
+}
+
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.pagination button {
+  background-color: #282c34;
+  border: 1px solid #61dafb;
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0 5px;
+  font-size: 16px;
+}
+
+.pagination button.active {
+  background-color: #61dafb;
+  color: #282c34;
+}
+
+.pagination button:hover {
+  background-color: #3a3f47;
+}

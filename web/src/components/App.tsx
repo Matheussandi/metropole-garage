@@ -1,16 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 
-// Simulação de dados de carros
-const simulatedCars = Array.from({ length: 50 }, (_, index) => ({
-  id: index + 1,
-  name: `Carro ${index + 1}`,
-  model: `Modelo ${index + 1}`,
-  color: `Cor ${index + 1}`,
-  plate: `PLT-${index + 1}`,
-  imageUrl: `https://via.placeholder.com/200?text=Carro+${index + 1}`, // Imagem simulada
-}));
-
 interface Car {
   id: number;
   name: string;
@@ -26,10 +16,23 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [carsPerPage] = useState<number>(10);
 
+  const fetchCars = async () => {
+    try {
+      const response = await fetch("http://localhost:3333/vehicles");
+      const data = await response.json();
+      const carsWithImages = data.map((car: Car, index: number) => ({
+        ...car,
+        imageUrl: `https://via.placeholder.com/200?text=Carro+${index + 1}`, // Adiciona a URL da imagem simulada
+      }));
+      setCars(carsWithImages);
+    } catch (error) {
+      console.error("Erro ao buscar os carros:", error);
+    }
+  };
+
   useEffect(() => {
     if (isVisible) {
-      // Simula a resposta da API
-      setCars(simulatedCars);
+      fetchCars();
     }
   }, [isVisible]);
 
@@ -37,10 +40,27 @@ const App: React.FC = () => {
     setIsVisible(!isVisible);
   };
 
-  const handleSelectCar = (carId: number) => {
-    console.log(`Carro selecionado: ${carId}`);
-    // Adicione lógica para o que deve acontecer quando um carro é selecionado
+  const handleSelectCar = async (carPlate: string) => {
+    try {
+      // Chama a API do servidor para respawnar o carro
+      const response = await fetch(`http://localhost:3333/spawnCar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ plate: carPlate }),
+      });
+  
+      if (response.ok) {
+        console.log(`Carro com a placa ${carPlate} foi respawnado com sucesso.`);
+      } else {
+        console.error(`Erro ao respawnar o carro com a placa ${carPlate}.`);
+      }
+    } catch (error) {
+      console.error("Erro ao fazer a requisição:", error);
+    }
   };
+  
 
   const indexOfLastCar = currentPage * carsPerPage;
   const indexOfFirstCar = indexOfLastCar - carsPerPage;
@@ -71,7 +91,8 @@ const App: React.FC = () => {
                       <p>Modelo: {car.model}</p>
                       <p>Cor: {car.color}</p>
                       <p>Placa: {car.plate}</p>
-                      <button onClick={() => handleSelectCar(car.id)}>Selecionar</button>
+                      <button onClick={() => handleSelectCar(car.plate)}>Selecionar</button>
+
                     </div>
                   </div>
                 ))}

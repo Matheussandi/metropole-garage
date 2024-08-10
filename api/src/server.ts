@@ -1,11 +1,16 @@
-import fastify from 'fastify';
+import Fastify from "fastify";
+import playerRoutes from "./routes/playerRoutes";
+import vehicleRoutes from "./routes/vehicleRoutes";
 
-const app = fastify({ logger: true });
+const app = Fastify();
 
-app.get('/', async (request, reply) => {
-  return { hello: 'world' };
-});
+app.register(playerRoutes);
+app.register(vehicleRoutes);
 
-app.listen({ port: 3333 }).then(() => {
-  console.log('Server started on http://localhost:3333');
+app.listen({ port: 3333 }, (err, address) => {
+  if (err) {
+    console.error(err);
+    process.exit(1);
+  }
+  console.log(`Servidor rodando em ${address}`);
 });

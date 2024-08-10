@@ -3,44 +3,19 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminPlayer = await prisma.player.create({
-    data: {
-      name: 'Admin User',
-      isAdmin: true,
-      vehicles: {
-        create: [
-          {
-            plate: 'ADMIN123',
-            color: 'Black',
-            owner: 'Admin User',
-          },
-        ],
-      },
-    },
+  await prisma.vehicle.createMany({
+    data: [
+      { name: 'Adder', plate: 'ADDER001', color: 'White' },
+      { name: 'Akuma', plate: 'AKUMA002', color: 'Black' },
+      { name: 'Alpha', plate: 'ALPHA003', color: 'Silver' },
+      { name: 'Ardent', plate: 'ARDENT004', color: 'Green' },
+      { name: 'Asea', plate: 'ASEA005', color: 'Yellow' },
+      { name: 'Autarch', plate: 'AUTARCH006', color: 'Orange' },
+      { name: 'Bagger', plate: 'BAGGER007', color: 'Purple' },
+    ],
   });
 
-  const normalPlayer = await prisma.player.create({
-    data: {
-      name: 'John Doe',
-      isAdmin: false,
-      vehicles: {
-        create: [
-          {
-            plate: 'ABC1234',
-            color: 'Red',
-            owner: 'John Doe',
-          },
-          {
-            plate: 'XYZ5678',
-            color: 'Blue',
-            owner: 'John Doe',
-          },
-        ],
-      },
-    },
-  });
-
-  console.log({ adminPlayer, normalPlayer });
+  console.log('Veículos adicionados com sucesso');
 }
 
 main()

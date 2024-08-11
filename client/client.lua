@@ -19,30 +19,20 @@ RegisterNUICallback('hideFrame', function(_, cb)
   cb({})
 end)
 
-RegisterNUICallback('getClientData', function(data, cb)
-  debugPrint('Data sent by React', json.encode(data))
-
-  local curCoords = GetEntityCoords(PlayerPedId())
-
-  local retData <const> = { x = curCoords.x, y = curCoords.y, z = curCoords.z }
-  cb(retData)
-end)
-
 RegisterNetEvent('spawnCar')
 AddEventHandler('spawnCar', function(vehicleData)
-    local model = GetHashKey(vehicleData.model)
+  local model = GetHashKey(vehicleData.model)
 
-    RequestModel(model)
-    while not HasModelLoaded(model) do
-        Wait(500)
-    end
+  RequestModel(model)
+  while not HasModelLoaded(model) do
+    Wait(500)
+  end
 
-    local playerPed = PlayerPedId()
-    local pos = GetEntityCoords(playerPed)
+  local playerPed = PlayerPedId()
+  local pos = GetEntityCoords(playerPed)
 
-    local vehicle = CreateVehicle(model, pos.x, pos.y, pos.z, GetEntityHeading(playerPed), true, false)
-
-    SetVehicleNumberPlateText(vehicle, vehicleData.plate)
-    SetVehicleColours(vehicle, vehicleData.color)
-    SetPedIntoVehicle(playerPed, vehicle, -1)
+  local vehicle = CreateVehicle(model, pos.x, pos.y, pos.z, GetEntityHeading(playerPed), true, false)
+  SetVehicleNumberPlateText(vehicle, vehicleData.plate)
+  SetVehicleColours(vehicle, vehicleData.color)
+  SetPedIntoVehicle(playerPed, vehicle, -1)
 end)

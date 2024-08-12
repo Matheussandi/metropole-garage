@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 
-import { fetchNui } from "../utils/fetchNui";
-
 import axios from "axios";
 
-import "./App.css";
+import { fetchNui } from "../utils/fetchNui";
+
+import { Pagination } from "../components/Pagination";
+import { Card } from "../components/Card";
 
 interface Car {
   id: number;
@@ -33,14 +34,12 @@ export default function App() {
   async function handleSelectCar(carPlate: string) {
     try {
       await fetchNui('respawnVehicle', { plate: carPlate });
-      console.log(`Carro com a placa ${carPlate} foi respawnado com sucesso.`);
-      
       handleCloseNui();
     } catch (error) {
       console.error("Erro ao respawnar o carro:", error);
     }
   }
-  
+
 
   async function handleCloseNui() {
     fetchNui("hideFrame", { setIsVisible: false })
@@ -79,6 +78,7 @@ export default function App() {
     return null;
   }
 
+
   return (
     <div className="flex justify-center items-center h-full text-center">
       <div className="bg-gray-900 rounded-lg w-9/12 h-5/6 p-8 flex flex-col justify-center items-center text-white overflow-auto relative">
@@ -88,41 +88,23 @@ export default function App() {
         >
           &times;
         </button>
+
         <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-rounded">
           <h2 className="text-2xl mb-6">Carros Disponíveis</h2>
           <div className="flex flex-wrap gap-4 justify-center">
             {currentCars.map((car) => (
-              <div key={car.id} className="bg-gray-700 rounded-lg w-48 p-4 text-center">
-                <img src={`https://docs.fivem.net/vehicles/${car.model}.webp`} alt={`${car.model}`} className="rounded-lg mb-4" />
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold">{car.name}</h3>
-                  <p className="text-sm">Modelo: {car.model}</p>
-                  <p className="text-sm">Cor: {car.color}</p>
-                  <p className="text-sm">Placa: {car.plate}</p>
-                  <button
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-2"
-                    onClick={() => handleSelectCar(car.plate)}
-                  >
-                    Selecionar
-                  </button>
-                </div>
-              </div>
+              <Card
+                key={car.id}
+                car={car}
+                onSelectCar={handleSelectCar}
+              />
             ))}
           </div>
-          <div className="mt-6 flex justify-center">
-            {Array.from({ length: totalPages }, (_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => setCurrentPage(index + 1)}
-                className={`mx-2 px-4 py-2 rounded border ${currentPage === index + 1
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-800 text-blue-500'
-                  }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </div>
+          <Pagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </div>

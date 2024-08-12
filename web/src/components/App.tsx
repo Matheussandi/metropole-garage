@@ -24,11 +24,7 @@ export default function App() {
   async function fetchCars() {
     try {
       const response = await axios.get("http://localhost:3333/vehicles");
-      const carsWithImages = response.data.map((car: Car, index: number) => ({
-        ...car,
-        imageUrl: `https://via.placeholder.com/200?text=Carro+${index + 1}`,
-      }));
-      setCars(carsWithImages);
+      setCars(response.data);
     } catch (error) {
       console.error("Erro ao buscar os carros:", error);
     }
@@ -36,24 +32,19 @@ export default function App() {
 
   async function handleSelectCar(carPlate: string) {
     try {
-      const response = await axios.post(`http://localhost:3333/vehicles/respawn`, {
-        plate: carPlate,
-      });
-
-      if (response.status === 200) {
-        console.log(`Carro com a placa ${carPlate} foi respawnado com sucesso.`);
-      } else {
-        console.error(`Erro ao respawnar o carro com a placa ${carPlate}.`);
-      }
+      await fetchNui('respawnVehicle', { plate: carPlate });
+      console.log(`Carro com a placa ${carPlate} foi respawnado com sucesso.`);
+      
+      handleCloseNui();
     } catch (error) {
-      console.error("Erro ao fazer a requisição:", error);
+      console.error("Erro ao respawnar o carro:", error);
     }
   }
+  
 
   async function handleCloseNui() {
     fetchNui("hideFrame", { setIsVisible: false })
       .then((retData) => {
-        console.log("Got return data from client scripts:");
         console.dir(retData);
         setIsVisible(false);
       })
@@ -102,7 +93,7 @@ export default function App() {
           <div className="flex flex-wrap gap-4 justify-center">
             {currentCars.map((car) => (
               <div key={car.id} className="bg-gray-700 rounded-lg w-48 p-4 text-center">
-                <img src={car.imageUrl} alt={`${car.model}`} className="rounded-lg mb-4" />
+                <img src={`https://docs.fivem.net/vehicles/${car.model}.webp`} alt={`${car.model}`} className="rounded-lg mb-4" />
                 <div className="text-center">
                   <h3 className="text-lg font-semibold">{car.name}</h3>
                   <p className="text-sm">Modelo: {car.model}</p>

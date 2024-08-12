@@ -36,3 +36,12 @@ AddEventHandler('spawnCar', function(vehicleData)
   SetVehicleColours(vehicle, vehicleData.color)
   SetPedIntoVehicle(playerPed, vehicle, -1)
 end)
+
+RegisterNUICallback('respawnVehicle', function(data, cb)
+  local playerId = source
+  local plate = data.plate
+
+  TriggerServerEvent('requestRespawnVehicle', plate)
+
+  cb('ok')
+end)

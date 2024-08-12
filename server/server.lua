@@ -61,33 +61,38 @@ AddEventHandler('spawnCar', function(vehicleData)
     -- Cria o veículo
     local vehicle = CreateVehicle(model, pos.x, pos.y, pos.z, GetEntityHeading(playerPed), true, false)
 
-    -- Define a placa e a cor
+    -- Define a placa
     SetVehicleNumberPlateText(vehicle, vehicleData.plate)
-    SetVehicleColours(vehicle, vehicleData.color)
+    
+    -- Define a cor do veículo usando StateBag
+    Entity(vehicle).state.color = vehicleData.color
+
+    -- Aplica a cor do StateBag ao veículo
+    local color = Entity(vehicle).state.color
+    if color then
+        SetVehicleColours(vehicle, color)
+    end
+
+    -- Coloca o jogador no veículo
     SetPedIntoVehicle(playerPed, vehicle, -1)
 end)
 
-RegisterNetEvent('spawnCarFromUI')
-AddEventHandler('spawnCarFromUI', function(vehicleData)
-    print('Spawn Car From UI: ')
+
+RegisterNetEvent('requestRespawnVehicle')
+AddEventHandler('requestRespawnVehicle', function(plate)
     local playerId = source
-    local model = GetHashKey(vehicleData.model)
 
-    -- Carrega o modelo do carro
-    RequestModel(model)
-    while not HasModelLoaded(model) do
-        Wait(500)
-    end
+    -- Chama a API para buscar o veículo
+    PerformHttpRequest('http://localhost:3333/vehicle?plate=' .. plate, function(statusCode, response, headers)
+        if statusCode == 200 then
+            local vehicleData = json.decode(response)
 
-    -- Obtém a posição do jogador para spawnar o carro
-    local playerPed = PlayerPedId()
-    local pos = GetEntityCoords(playerPed)
-
-    -- Cria o veículo
-    local vehicle = CreateVehicle(model, pos.x, pos.y, pos.z, GetEntityHeading(playerPed), true, false)
-
-    -- Define a placa e a cor
-    SetVehicleNumberPlateText(vehicle, vehicleData.plate)
-    SetVehicleColours(vehicle, vehicleData.color)
-    SetPedIntoVehicle(playerPed, vehicle, -1)
+            -- Envia os dados do veículo para o cliente
+            TriggerClientEvent('spawnCar', playerId, vehicleData)
+        else
+            TriggerClientEvent('chat:addMessage', playerId, {
+                args = { '^1Erro', 'Veículo não encontrado.' }
+            })
+        end
+    end)
 end)

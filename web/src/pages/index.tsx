@@ -20,7 +20,7 @@ export default function App() {
   const [cars, setCars] = useState<Car[]>([]);
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [carsPerPage] = useState<number>(8);
+  const [carsPerPage] = useState<number>(6);
 
   async function fetchCars() {
     try {
@@ -40,9 +40,8 @@ export default function App() {
     }
   }
 
-
   async function handleCloseNui() {
-    fetchNui("hideFrame", { setIsVisible: false })
+    fetchNui("close-nui", { setIsVisible: false })
       .then((retData) => {
         console.dir(retData);
         setIsVisible(false);
@@ -91,7 +90,7 @@ export default function App() {
 
         <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-rounded">
           <h2 className="text-2xl mb-6">Carros Disponíveis</h2>
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-wrap justify-center">
             {currentCars.map((car) => (
               <Card
                 key={car.id}

@@ -20,26 +20,34 @@ RegisterCommand('car', function(source, args)
         return
     end
 
-    -- Exibe a placa informada no console
-    print('Placa informada: ' .. plate)
-
-    -- Chama a API para buscar o veículo
-    PerformHttpRequest('http://localhost:3333/vehicle?plate=' .. plate, function(statusCode, response, headers)
-        print('Status Code: ' .. statusCode)
-        print('Response: ' .. response)
-
+    -- Verifica se o jogador é administrador
+    PerformHttpRequest('http://localhost:3333/players/' .. playerId, function(statusCode, response, headers)
         if statusCode == 200 then
-            local vehicleData = json.decode(response)
-            print('Vehicle Data: ' .. json.encode(vehicleData))
-
-            -- Envia os dados do veículo para o cliente
-            TriggerClientEvent('spawnCar', playerId, vehicleData)
+            local responseData = json.decode(response)
+            if responseData.isAdmin then
+                -- Chama a API para buscar o veículo
+                PerformHttpRequest('http://localhost:3333/vehicle?plate=' .. plate, function(vehicleStatusCode, vehicleResponse, vehicleHeaders)
+                    if vehicleStatusCode == 200 then
+                        local vehicleData = json.decode(vehicleResponse)
+                        -- Envia os dados do veículo para o cliente
+                        TriggerClientEvent('spawnCar', playerId, vehicleData)
+                    else
+                        TriggerClientEvent('chat:addMessage', playerId, {
+                            args = { '^1Erro', 'Veículo não encontrado.' }
+                        })
+                    end
+                end)
+            else
+                TriggerClientEvent('chat:addMessage', playerId, {
+                    args = { '^1Erro', 'Você não tem permissão para usar este comando.' }
+                })
+            end
         else
             TriggerClientEvent('chat:addMessage', playerId, {
-                args = { '^1Erro', 'Veículo não encontrado.' }
+                args = { '^1Erro', 'Não foi possível verificar o status de administrador.' }
             })
         end
-    end)
+    end, 'GET', '', { ['Content-Type'] = 'application/json' })
 end)
 
 RegisterNetEvent('spawnCar')
@@ -61,33 +69,71 @@ AddEventHandler('spawnCar', function(vehicleData)
     -- Cria o veículo
     local vehicle = CreateVehicle(model, pos.x, pos.y, pos.z, GetEntityHeading(playerPed), true, false)
 
-    -- Define a placa e a cor
+    -- Define a placa
     SetVehicleNumberPlateText(vehicle, vehicleData.plate)
-    SetVehicleColours(vehicle, vehicleData.color)
+    
+    -- Converter string RGB para inteiros
+    local r, g, b = vehicleData.color:match("(%d+),(%d+),(%d+)")
+    local primaryColor = { tonumber(r), tonumber(g), tonumber(b) }
+
+    -- Define a cor do veículo usando os valores RGB do back-end
+    SetVehicleCustomPrimaryColour(vehicle, primaryColor[1], primaryColor[2], primaryColor[3])
+    SetVehicleCustomSecondaryColour(vehicle, primaryColor[1], primaryColor[2], primaryColor[3])
+
+    -- Coloca o jogador no veículo
     SetPedIntoVehicle(playerPed, vehicle, -1)
 end)
 
-RegisterNetEvent('spawnCarFromUI')
-AddEventHandler('spawnCarFromUI', function(vehicleData)
-    print('Spawn Car From UI: ')
+RegisterNetEvent('requestRespawnVehicle')
+AddEventHandler('requestRespawnVehicle', function(plate)
     local playerId = source
-    local model = GetHashKey(vehicleData.model)
 
-    -- Carrega o modelo do carro
-    RequestModel(model)
-    while not HasModelLoaded(model) do
-        Wait(500)
-    end
+    -- Chama a API para buscar o veículo
+    PerformHttpRequest('http://localhost:3333/vehicle?plate=' .. plate, function(statusCode, response, headers)
+        if statusCode == 200 then
+            local vehicleData = json.decode(response)
 
-    -- Obtém a posição do jogador para spawnar o carro
-    local playerPed = PlayerPedId()
-    local pos = GetEntityCoords(playerPed)
+            -- Envia os dados do veículo para o cliente
+            TriggerClientEvent('spawnCar', playerId, vehicleData)
+        else
+            TriggerClientEvent('chat:addMessage', playerId, {
+                args = { '^1Erro', 'Veículo não encontrado.' }
+            })
+        end
+    end)
+end)
 
-    -- Cria o veículo
-    local vehicle = CreateVehicle(model, pos.x, pos.y, pos.z, GetEntityHeading(playerPed), true, false)
+RegisterCommand('admin', function(source, args)
+    local playerId = source
 
-    -- Define a placa e a cor
-    SetVehicleNumberPlateText(vehicle, vehicleData.plate)
-    SetVehicleColours(vehicle, vehicleData.color)
-    SetPedIntoVehicle(playerPed, vehicle, -1)
+    -- Chama a API para obter o status atual de administrador do jogador
+    PerformHttpRequest('http://localhost:3333/players/' .. playerId, function(statusCode, response, headers)
+        if statusCode == 200 then
+            local responseData = json.decode(response)
+            local newAdminStatus = not responseData.isAdmin
+
+            -- Atualiza o status de administrador do jogador
+            PerformHttpRequest('http://localhost:3333/players/' .. playerId .. '/admin', function(updateStatusCode, updateResponse, updateHeaders)
+                if updateStatusCode == 200 then
+                    if newAdminStatus then
+                        TriggerClientEvent('chat:addMessage', playerId, {
+                            args = { '^2Sucesso', 'Você agora é um administrador.' }
+                        })
+                    else
+                        TriggerClientEvent('chat:addMessage', playerId, {
+                            args = { '^2Sucesso', 'Seu status de administrador foi removido.' }
+                        })
+                    end
+                else
+                    TriggerClientEvent('chat:addMessage', playerId, {
+                        args = { '^1Erro', 'Não foi possível atualizar o status de administrador.' }
+                    })
+                end
+            end, 'PATCH', json.encode({ isAdmin = newAdminStatus }), { ['Content-Type'] = 'application/json' })
+        else
+            TriggerClientEvent('chat:addMessage', playerId, {
+                args = { '^1Erro', 'Não foi possível obter o status de administrador.' }
+            })
+        end
+    end, 'GET', '', { ['Content-Type'] = 'application/json' })
 end)

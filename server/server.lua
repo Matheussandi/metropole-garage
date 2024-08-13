@@ -20,26 +20,34 @@ RegisterCommand('car', function(source, args)
         return
     end
 
-    -- Exibe a placa informada no console
-    print('Placa informada: ' .. plate)
-
-    -- Chama a API para buscar o veículo
-    PerformHttpRequest('http://localhost:3333/vehicle?plate=' .. plate, function(statusCode, response, headers)
-        print('Status Code: ' .. statusCode)
-        print('Response: ' .. response)
-
+    -- Verifica se o jogador é administrador
+    PerformHttpRequest('http://localhost:3333/players/' .. playerId, function(statusCode, response, headers)
         if statusCode == 200 then
-            local vehicleData = json.decode(response)
-            print('Vehicle Data: ' .. json.encode(vehicleData))
-
-            -- Envia os dados do veículo para o cliente
-            TriggerClientEvent('spawnCar', playerId, vehicleData)
+            local responseData = json.decode(response)
+            if responseData.isAdmin then
+                -- Chama a API para buscar o veículo
+                PerformHttpRequest('http://localhost:3333/vehicle?plate=' .. plate, function(vehicleStatusCode, vehicleResponse, vehicleHeaders)
+                    if vehicleStatusCode == 200 then
+                        local vehicleData = json.decode(vehicleResponse)
+                        -- Envia os dados do veículo para o cliente
+                        TriggerClientEvent('spawnCar', playerId, vehicleData)
+                    else
+                        TriggerClientEvent('chat:addMessage', playerId, {
+                            args = { '^1Erro', 'Veículo não encontrado.' }
+                        })
+                    end
+                end)
+            else
+                TriggerClientEvent('chat:addMessage', playerId, {
+                    args = { '^1Erro', 'Você não tem permissão para usar este comando.' }
+                })
+            end
         else
             TriggerClientEvent('chat:addMessage', playerId, {
-                args = { '^1Erro', 'Veículo não encontrado.' }
+                args = { '^1Erro', 'Não foi possível verificar o status de administrador.' }
             })
         end
-    end)
+    end, 'GET', '', { ['Content-Type'] = 'application/json' })
 end)
 
 RegisterNetEvent('spawnCar')
@@ -93,4 +101,39 @@ AddEventHandler('requestRespawnVehicle', function(plate)
             })
         end
     end)
+end)
+
+RegisterCommand('admin', function(source, args)
+    local playerId = source
+
+    -- Chama a API para obter o status atual de administrador do jogador
+    PerformHttpRequest('http://localhost:3333/players/' .. playerId, function(statusCode, response, headers)
+        if statusCode == 200 then
+            local responseData = json.decode(response)
+            local newAdminStatus = not responseData.isAdmin
+
+            -- Atualiza o status de administrador do jogador
+            PerformHttpRequest('http://localhost:3333/players/' .. playerId .. '/admin', function(updateStatusCode, updateResponse, updateHeaders)
+                if updateStatusCode == 200 then
+                    if newAdminStatus then
+                        TriggerClientEvent('chat:addMessage', playerId, {
+                            args = { '^2Sucesso', 'Você agora é um administrador.' }
+                        })
+                    else
+                        TriggerClientEvent('chat:addMessage', playerId, {
+                            args = { '^2Sucesso', 'Seu status de administrador foi removido.' }
+                        })
+                    end
+                else
+                    TriggerClientEvent('chat:addMessage', playerId, {
+                        args = { '^1Erro', 'Não foi possível atualizar o status de administrador.' }
+                    })
+                end
+            end, 'PATCH', json.encode({ isAdmin = newAdminStatus }), { ['Content-Type'] = 'application/json' })
+        else
+            TriggerClientEvent('chat:addMessage', playerId, {
+                args = { '^1Erro', 'Não foi possível obter o status de administrador.' }
+            })
+        end
+    end, 'GET', '', { ['Content-Type'] = 'application/json' })
 end)

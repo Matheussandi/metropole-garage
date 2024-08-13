@@ -15,16 +15,17 @@ interface Car {
   plate: string;
   imageUrl: string;
 }
-
 export default function App() {
-  const [cars, setCars] = useState<Car[]>([]);
+  const [playerId, setPlayerId] = useState<number | null>(null);
   const [isVisible, setIsVisible] = useState<boolean>(false);
+
+  const [cars, setCars] = useState<Car[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [carsPerPage] = useState<number>(6);
 
-  async function fetchCars() {
+  async function fetchCars(playerId: number) {
     try {
-      const response = await axios.get("http://localhost:3333/vehicles");
+      const response = await axios.get(`http://localhost:3333/players/${playerId}/vehicles`);
       setCars(response.data);
     } catch (error) {
       console.error("Erro ao buscar os carros:", error);
@@ -57,10 +58,10 @@ export default function App() {
   const totalPages = Math.ceil(cars.length / carsPerPage);
 
   useEffect(() => {
-    if (isVisible) {
-      fetchCars();
+    if (isVisible && playerId !== null) {
+      fetchCars(playerId);
     }
-  }, [isVisible]);
+  }, [isVisible, playerId]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -73,10 +74,17 @@ export default function App() {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
+  useEffect(() => {
+    fetchNui('getPlayerId').then((id) => {
+      setPlayerId(id as number);
+    }).catch((error) => {
+      console.error("Erro ao obter o ID do jogador:", error);
+    });
+  }, []);
+
   if (!isVisible) {
     return null;
   }
-
 
   return (
     <div className="flex justify-center items-center h-full text-center">
@@ -91,13 +99,17 @@ export default function App() {
         <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-rounded">
           <h2 className="text-2xl mb-6">Carros Disponíveis</h2>
           <div className="flex flex-wrap justify-center">
-            {currentCars.map((car) => (
-              <Card
-                key={car.id}
-                car={car}
-                onSelectCar={handleSelectCar}
-              />
-            ))}
+            {currentCars.length === 0 ? (
+              <p>Nenhum carro disponível no momento.</p>
+            ) : (
+              currentCars.map((car) => (
+                <Card
+                  key={car.id}
+                  car={car}
+                  onSelectCar={handleSelectCar}
+                />
+              ))
+            )}
           </div>
           <Pagination
             totalPages={totalPages}

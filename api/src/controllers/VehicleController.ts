@@ -2,10 +2,6 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import prisma from "../utils/prismaClient";
 import { GetCarByPlateQuery } from "../models/vehicle";
 
-import { EventEmitter } from 'events';
-
-const eventEmitter = new EventEmitter();
-
 export async function getCarByPlate(
   request: FastifyRequest<{ Querystring: GetCarByPlateQuery }>,
   reply: FastifyReply
@@ -50,9 +46,7 @@ export async function respawnCar(
       where: { plate: plate },
     });
 
-    if (vehicle) {
-      eventEmitter.emit('spawnCarFromUI', vehicle);
-      
+    if (vehicle) {      
       reply.send({ success: true });
     } else {
       reply.status(404).send({ error: "Veículo não encontrado." });

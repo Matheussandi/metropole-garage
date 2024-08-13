@@ -64,19 +64,17 @@ AddEventHandler('spawnCar', function(vehicleData)
     -- Define a placa
     SetVehicleNumberPlateText(vehicle, vehicleData.plate)
     
-    -- Define a cor do veículo usando StateBag
-    Entity(vehicle).state.color = vehicleData.color
+    -- Converter string RGB para inteiros
+    local r, g, b = vehicleData.color:match("(%d+),(%d+),(%d+)")
+    local primaryColor = { tonumber(r), tonumber(g), tonumber(b) }
 
-    -- Aplica a cor do StateBag ao veículo
-    local color = Entity(vehicle).state.color
-    if color then
-        SetVehicleColours(vehicle, color)
-    end
+    -- Define a cor do veículo usando os valores RGB do back-end
+    SetVehicleCustomPrimaryColour(vehicle, primaryColor[1], primaryColor[2], primaryColor[3])
+    SetVehicleCustomSecondaryColour(vehicle, primaryColor[1], primaryColor[2], primaryColor[3])
 
     -- Coloca o jogador no veículo
     SetPedIntoVehicle(playerPed, vehicle, -1)
 end)
-
 
 RegisterNetEvent('requestRespawnVehicle')
 AddEventHandler('requestRespawnVehicle', function(plate)

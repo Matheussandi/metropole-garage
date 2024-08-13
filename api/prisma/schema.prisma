@@ -1,29 +1,25 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-model player {
-  id      Int       @id @default(autoincrement())
-  name    String
-  isAdmin Boolean   @default(false)
-  vehicle vehicle[]
+model Player {
+  id       Int       @id @default(autoincrement())
+  name     String
+  isAdmin  Boolean   @default(false)
+  vehicles Vehicle[]
 }
 
-model vehicle {
+model Vehicle {
   id       Int     @id @default(autoincrement())
-  plate    String  @unique(map: "Vehicle_plate_key")
+  plate    String  @unique(map: "Vehicle_plate_key") @db.VarChar(8)
   color    String
   owner    String?
   playerId Int?
   name     String
   model    String
   category String
-  player   player? @relation(fields: [playerId], references: [id], map: "Vehicle_playerId_fkey")
+  player   Player? @relation(fields: [playerId], references: [id], map: "Vehicle_playerId_fkey")
 
   @@index([playerId], map: "Vehicle_playerId_fkey")
 }

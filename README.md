@@ -34,6 +34,7 @@ https://github.com/user-attachments/assets/73a93624-3248-4829-a449-fe7dcbb29cad
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Typescript](https://www.typescriptlang.org/)
 - [Vite](https://vitejs.dev/)
+- [Lua](https://www.lua.org/portugues.html)
 
 # ⚠️ Popular banco de dados ⚠️
 
@@ -48,6 +49,9 @@ cd api
 
 # Instale as dependências
 npm install
+
+# Gere o cliente Prisma:
+npx prisma generate
 
 # Popule o banco de dados
 npm run seed

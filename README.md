@@ -36,6 +36,12 @@ https://github.com/user-attachments/assets/73a93624-3248-4829-a449-fe7dcbb29cad
 - [Vite](https://vitejs.dev/)
 - [Lua](https://www.lua.org/portugues.html)
 
+# Pré-requisitos
+
+Antes de começar, certifique-se de ter as seguintes ferramentas instaladas em sua máquina:
+- [Node.js](https://nodejs.org/en/)
+- [MySQL](https://www.mysql.com/)
+
 # ⚠️ Popular banco de dados ⚠️
 
 Não se esqueça de popular o banco de dados, pois é nele que estão todos os veículos registrados para que o usuário consiga visualizar e executar alguns scripts.
@@ -50,8 +56,14 @@ cd api
 # Instale as dependências
 npm install
 
-# Gere o cliente Prisma:
+# Gere o cliente prisma
 npx prisma generate
+
+# Execute as migrações do banco de dados
+npx prisma migrate dev
+
+# Visualize o banco de dados (opcional)
+npx prisma studio
 
 # Popule o banco de dados
 npm run seed
@@ -69,5 +81,7 @@ cd web
 npm install
 
 # Inicie e faça o build ao mesmo tempo
-npm start:game
+npm run start:game
 ```
+
+Por fim, insira `ensure metropole-garage` em seu arquivo `server.cfg`.

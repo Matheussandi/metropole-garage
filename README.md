@@ -1,18 +1,42 @@
-### Garage system
+# <p align="center">Sistema de Garagem</p>
 
-Description...
+<p align="justify">Este projeto tem como intuito exibir uma interface para que o usuário consiga ver todos os seus carros em um servidor de FiveM.</p>
 
-### Tasks
+### <p align="center">Demonstração</p>
+https://github.com/user-attachments/assets/73a93624-3248-4829-a449-fe7dcbb29cad
 
-#### Front-end
-- [x] Desenvolver uma interface de usuário usando React que permita aos jogadores visualizar uma lista de veículos.
-- [x] Cada veículo deve ser exibido com detalhes como modelo, cor, e etc.
-- [ ] Ao selecionar um veículo, um botão deve estar disponível para "Spawnar"  o veículo no jogo.
-- [x] Utilizar TypeScript para garantir a tipagem estática no desenvolvimento do 
-React.
+# :pushpin: Recursos
 
-#### Integração com FiveM
-- [ ] Os dados dos veículos devem ser persistidos entre as sessões dos jogadores no servidor.
-- [x] Configurar o banco de dados para armazenar as informações dos veículos (placa, modelo, cor, customizações, proprietário, etc.).
-- [ ] Desejável o uso de StateBags e uma estrutura Class Based.
-- [x] Criar um comando “/car (placa)ˮ para administradores para que um administrador consiga spawnar um veículo informando a placa.
+## Player
+- [x] Visualizar seus carros;
+- [x] Spawnar carro selecionado.
+
+## Admin
+- [x] Visualizar carros;
+- [x] Spawnar carro selecionado;
+- [x] Spawnar qualquer carro através do comando `/car (placa)`;
+- [x] Atribuir um carro, executando `assignCar (placa)`.
+ 
+# 👨‍💻 Tecnologias
+
+- [Node.js](https://nodejs.org/en/)
+- [Axios](https://axios-http.com/docs/intro)
+- [Fastify](https://fastify.dev/)
+- [Prisma](https://www.prisma.io/)
+- [MySQL](https://www.mysql.com/)
+- [React](https://pt-br.reactjs.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Typescript](https://www.typescriptlang.org/)
+- [Vite](https://vitejs.dev/) 
+
+
+# ▶️ Executando o projeto
+```js
+// Instala as dependências
+npm install
+
+// Excecuta aplicação web e server
+npm run dev
+// Excecuta aplicação mobile
+expo start
+```

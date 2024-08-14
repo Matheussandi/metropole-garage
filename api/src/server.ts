@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+
 import playerRoutes from "./routes/playerRoutes";
 import vehicleRoutes from "./routes/vehicleRoutes";
 
